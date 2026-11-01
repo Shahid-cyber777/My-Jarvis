@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS AI</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at center,#102d49,#030914 75%);
+  color: #d9f7ff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 22px 15px;
+}
+h1 {
+  color: #36dfff;
+  letter-spacing: 5px;
+  text-shadow: 0 0 18px #00cfff;
+}
+.status { color: #7bcedf; font-size: 13px; }
+.orb {
+  width: 175px; height: 175px;
+  margin: 32px auto;
+  border: 3px solid #20dafa;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 25px #00cfff,
+              inset 0 0 30px #007da5;
+  animation: pulse 2s infinite;
+}
+.orb span { font-size: 65px; }
+@keyframes pulse {
+  50% { box-shadow: 0 0 45px #00cfff,
+       inset 0 0 40px #007da5; }
+}
+button, input, select {
+  padding: 13px;
+  border: 1px solid #16cbe8;
+  border-radius: 10px;
+  background: #0b2035;
+  color: white;
+  font-size: 15px;
+}
+button { cursor: pointer; margin: 5px; }
+button:active { background: #145071; }
+.mic { background: #087d9d; font-weight: bold; }
+.panel {
+  max-width: 500px;
+  margin: 18px auto;
+  padding: 17px;
+  border: 1px solid #12647e;
+  border-radius: 14px;
+  background: #071727;
+  text-align: left;
+}
+#output {
+  min-height: 65px;
+  line-height: 1.6;
+  color: #9ceeff;
+  overflow-wrap: anywhere;
+}
+input, select { width: 100%; margin: 6px 0; }
+.small { font-size: 12px; color: #8bb7c7; }
+</style>
+</head>
+<body>
+
+<h1>J.A.R.V.I.S</h1>
+<p class="status">PERSONAL ASSISTANT SYSTEM | VERSION 1.0</p>
+
+<div class="orb"><span>🤖</span></div>
+
+<p id="status">SYSTEM ONLINE</p>
+
+<button class="mic" onclick="listen()">🎙️ ACTIVATE VOICE</button>
+
+<div class="panel">
+  <h3>ASSISTANT RESPONSE</h3>
+  <div id="output">Hello! I am JARVIS. How can I help you?</div>
+</div>
+
+<div class="panel">
+  <h3>TYPE A COMMAND</h3>
+  <input id="command" placeholder="Type your command here">
+  <button onclick="sendCommand()">SEND</button>
+</div>
+
+<div class="panel">
+  <h3>PERSONAL SETTINGS</h3>
+  <label>Your preferred nickname</label>
+  <input id="nickname" placeholder="Enter your nickname">
+  <label>Response language</label>
+  <select id="language">
+    <option value="en-IN">English</option>
+    <option value="hi-IN">Hindi</option>
+    <option value="mr-IN">Marathi</option>
+  </select>
+  <button onclick="saveSettings()">SAVE PREFERENCES</button>
+  <p class="small">Preferences are saved in this browser on your tablet.</p>
+</div>
+
+<div class="panel">
+  <h3>AVAILABLE COMMANDS</h3>
+  <p class="small">
+  • Hello JARVIS<br>
+  • What time is it?<br>
+  • What is today's date?<br>
+  • Open YouTube<br>
+  • Open Google<br>
+  • Open ChatGPT<br>
+  • What is your name?<br>
+  </p>
+</div>
+
+<script>
+const output = document.getElementById("output");
+const statusText = document.getElementById("status");
+const nickname = document.getElementById("nickname");
+const language = document.getElementById("language");
+
+let savedName = localStorage.getItem("jarvisName") || "";
+let savedLanguage = localStorage.getItem("jarvisLanguage") || "en-IN";
+
+nickname.value = savedName;
+language.value = savedLanguage;
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.lang = language.value;
+  voice.rate = 0.95;
+  speechSynthesis.speak(voice);
+}
+
+function reply(text) {
+  output.textContent = text;
+  speak(text);
+}
+
+function saveSettings() {
+  localStorage.setItem("jarvisName", nickname.value);
+  localStorage.setItem("jarvisLanguage", language.value);
+  reply("Your preferences have been saved.");
+}
+
+function openSite(site) {
+  const sites = {
+    youtube: "https://www.youtube.com/",
+    google: "https://www.google.com/",
+    chatgpt: "https://chatgpt.com/"
+  };
+
+  if (sites[site]) {
+    reply("Opening " + site);
+    window.open(sites[site], "_blank");
+  }
+}
+
+function handleCommand(raw) {
+  const cmd = raw.toLowerCase().trim();
+
+  output.textContent = "You said: " + raw;
+
+  if (cmd.includes("open youtube")) {
+    openSite("youtube");
+  }
+  else if (cmd.includes("open google")) {
+    openSite("google");
+  }
+  else if (cmd.includes("open chatgpt")) {
+    openSite("chatgpt");
+  }
+  else if (cmd.includes("time")) {
+    reply("The current time is " +
+      new Date().toLocaleTimeString());
+  }
+  else if (cmd.includes("date")) {
+    reply("Today's date is " +
+      new Date().toLocaleDateString());
+  }
+  else if (cmd.includes("your name")) {
+    reply("I am JARVIS, your personal assistant.");
+  }
+  else if (cmd.includes("hello") || cmd.includes("hi jarvis")) {
+    reply("Hello " + (savedName || "Sir") +
+      ". All systems are ready.");
+  }
+  else if (cmd.includes("who are you")) {
+    reply("I am your personal JARVIS assistant.");
+  }
+  else if (cmd.includes("help")) {
+    reply("You can ask for the time, date, or ask me to open a website.");
+  }
+  else {
+    reply("I don't have an AI brain connected yet. Try asking a basic question or open ChatGPT for more advanced answers.");
+  }
+}
+
+function sendCommand() {
+  const text = document.getElementById("command").value;
+  if (text.trim()) handleCommand(text);
+}
+
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+function listen() {
+  if (!SpeechRecognition) {
+    reply("Voice recognition is not supported in this browser. Try an updated Chrome browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = language.value;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  statusText.textContent = "LISTENING...";
+
+  recognition.onresult = function(event) {
+    const words = event.results[0][0].transcript;
+    statusText.textContent = "COMMAND RECEIVED";
+    handleCommand(words);
+  };
+
+  recognition.onerror = function() {
+    statusText.textContent = "VOICE ERROR";
+    output.textContent = "Please check microphone permission and try again.";
+  };
+
+  recognition.onend = function() {
+    statusText.textContent = "SYSTEM ONLINE";
+  };
+
+  recognition.start();
+}
+
+document.getElementById("command")
+.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") sendCommand();
+});
+</script>
+
+</body>
+</html>
